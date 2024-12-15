@@ -57,7 +57,7 @@ function isString(value) {
  *   concatenateStrings('', 'bb') => 'bb'
  */
 function concatenateStrings(value1, value2) {
-  return value1 + value2;
+  return value1.concat(value2);
 }
 
 /**
@@ -75,7 +75,7 @@ function getFirstChar(value) {
   if (value.length === 0) {
     return '';
   }
-  return value[0];
+  return value.charAt(0);
 }
 
 /**
@@ -105,7 +105,7 @@ function removeLeadingAndTrailingWhitespaces(value) {
  *   removeLeadingWhitespaces('\t\t\tHello, World! ') => 'Hello, World! '
  */
 function removeLeadingWhitespaces(value) {
-  return value.replace(/^\s+/, '');
+  return value.trimStart();
 }
 
 /**
@@ -120,7 +120,7 @@ function removeLeadingWhitespaces(value) {
  *   removeTrailingWhitespaces('\t\t\tHello, World! ') => '\t\t\tHello, World!'
  */
 function removeTrailingWhitespaces(value) {
-  return value.replace(/\s+$/, '');
+  return value.trimEnd();
 }
 
 /**
@@ -159,10 +159,11 @@ function repeatString(str, times) {
  *   removeFirstOccurrences('ABABAB', 'BA') => 'ABAB'.
  */
 function removeFirstOccurrences(str, value) {
-  if (typeof str !== 'string' || typeof value !== 'string') {
+  const index = str.indexOf(value);
+  if (index === -1) {
     return str;
   }
-  return str.replace(value, '');
+  return str.slice(0, index) + str.slice(index + value.length);
 }
 
 /**
@@ -240,7 +241,7 @@ function endsWith(str, substr) {
   if (typeof str !== 'string' || typeof substr !== 'string') {
     return false;
   }
-  return str.endsWith(substr);;
+  return str.endsWith(substr);
 }
 
 /**
@@ -323,13 +324,7 @@ function containsSubstring(str, substring) {
  */
 function countVowels(str) {
   const vowels = 'aeiouyAEIOUY';
-  let count = 0;
-  for (let char of str) {
-    if (vowels.includes(char)) {
-      count++;
-    }
-  }
-  return count;
+  return str.split('').filter((char) => vowels.includes(char)).length;
 }
 
 /**
@@ -346,8 +341,9 @@ function countVowels(str) {
  *   isPalindrome('No lemon, no melon') => true
  */
 function isPalindrome(str) {
-  const reversStr = str.split('').reverse().join;
-  return str === reversStr;
+  const cleanedStr = str.toLowerCase().replace(/[^a-z]/g, '');
+  const reversedStr = cleanedStr.split('').reverse().join('');
+  return cleanedStr === reversedStr;
 }
 
 /**
@@ -363,14 +359,11 @@ function isPalindrome(str) {
  *   findLongestWord('No words here') => 'words'
  */
 function findLongestWord(sentence) {
-  const words = sentence.split();
-  let longWord = '';
-  for (let word of words) {
-    if (word.length > longWord.length) {
-      longWord = word;
-    }
-  }
-  return longWord;
+  const words = sentence.split(' ');
+  return words.reduce(
+    (longWord, word) => (word.length > longWord.length ? word : longWord),
+    ''
+  );
 }
 
 /**
@@ -399,13 +392,15 @@ function reverseWords(/* str */) {
  *   invertCase('12345') => '12345'
  */
 function invertCase(str) {
-  return str.split('').map(char => {
-    if (char === char.toUpperCase()) {
-      return char.toLowerCase();
-    } else {
+  return str
+    .split('')
+    .map((char) => {
+      if (char === char.toUpperCase()) {
+        return char.toLowerCase();
+      }
       return char.toUpperCase();
-    }
-  }).join('');
+    })
+    .join('');
 }
 
 /**
@@ -436,7 +431,7 @@ function getStringFromTemplate(firstName, lastName) {
  *   extractNameFromTemplate('Hello, Chuck Norris!') => 'Chuck Norris'
  */
 function extractNameFromTemplate(value) {
-  const match = value.match(/^Hello,\s(.+?)\s!$/);
+  const match = value.match(/^Hello, (.+?)!$/);
   return match ? match[1] : '';
 }
 
@@ -451,8 +446,8 @@ function extractNameFromTemplate(value) {
  *   unbracketTag('<span>') => 'span'
  *   unbracketTag('<a>') => 'a'
  */
-function unbracketTag(/* str */) {
-  throw new Error('Not implemented');
+function unbracketTag(str) {
+  return str.slice(1, -1);
 }
 
 /**
@@ -470,8 +465,8 @@ function unbracketTag(/* str */) {
  *   ],
  *   'info@gmail.com' => ['info@gmail.com']
  */
-function extractEmails(/* str */) {
-  throw new Error('Not implemented');
+function extractEmails(str) {
+  return str.split(';');
 }
 
 /**
@@ -490,8 +485,12 @@ function extractEmails(/* str */) {
  *    => 'NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm'
  *
  */
-function encodeToRot13(/* str */) {
-  throw new Error('Not implemented');
+function encodeToRot13(str) {
+  return str.replace(/[A-Za-z]/g, (char) => {
+    const charCode = char.charCodeAt(0);
+    const base = charCode < 97 ? 65 : 97;
+    return String.fromCharCode(((charCode - base + 13) % 26) + base);
+  });
 }
 
 /**
@@ -518,8 +517,28 @@ function encodeToRot13(/* str */) {
  *   'Q♠' => 50
  *   'K♠' => 51
  */
-function getCardId(/* value */) {
-  throw new Error('Not implemented');
+function getCardId(value) {
+  const masties = ['♣', '♦', '♥', '♠'];
+  const strongs = [
+    'A',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10',
+    'J',
+    'Q',
+    'K',
+  ];
+  const masty = value.slice(-1);
+  const strong = value.slice(0, -1);
+  const mastyIndex = masties.indexOf(masty);
+  const strongIndex = strongs.indexOf(strong);
+  return mastyIndex * strongs.length + strongIndex;
 }
 
 module.exports = {
